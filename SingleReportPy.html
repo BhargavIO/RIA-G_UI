@@ -1,0 +1,639 @@
+
+<html lang="en">
+<head>
+	<title>Kalpah Eye Dashboard</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+	<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="http://underscorejs.org/underscore-min.js"></script>
+	<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
+	charset="utf-8"></script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="js/html2canvas.min.js"></script>
+	<script type="text/javascript" src="js/jspdf.debug.js"></script>
+	<style type="text/css">
+		body{
+
+		}
+		.path {
+			stroke: #4DC65C;
+			stroke-width: 1;
+			fill: none;
+		}
+
+		.area {
+			fill: #4DC65C;
+			stroke-width: 0;
+		}
+
+		.areaOrange {
+			fill: #D7D7D7;
+			stroke-width: 0;
+		}
+
+		.axis path, .axis line {
+			fill: none;
+			stroke: black;
+			stroke-width: 1;
+			shape-rendering: crispEdges;
+		}
+
+		.scale {
+			-ms-transform: scale(.8, .8); /* IE 9 */
+			-webkit-transform: scale(.8, .8); /* Safari */
+			transform: scale(.8, .8); /* Standard syntax */
+		}
+
+		div#overlay {
+
+			display: none;
+			z-index: 2;
+			background: white;
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			top: 0px;
+			left: 0px;
+			text-align: center;
+		}
+		
+		div#popup {
+			display: none;
+			position: absolute;
+			z-index: 1000;
+			margin-left:30%;
+			margin-top:10%;
+			box-shadow: 0px 0px 30px 2px rgba(0,0,0,.5);
+			width: 40%; 
+			height: 200px;
+			background: white;
+			color: #000;
+			background-color: white;
+		}
+
+		div#popup_email {
+			display: none;
+			position: absolute;
+			z-index: 1000;
+			margin-left:30%;
+			margin-top:10%;
+			box-shadow: 0px 0px 30px 2px rgba(0,0,0,.5);
+			width: 40%; 
+			height: 280px;
+			background: white;
+			color: #000;
+			background-color: white;
+		}
+
+		td {
+			text-align: right;
+		}
+
+		#popup div{
+			margin:50px;
+			text-align:center;
+		}
+
+		.navbar {
+			background-color: #000;
+		}
+
+		.navbar-brand {
+			color: #fff !important;
+		}
+
+		.navbar-nav>li {
+			background: #000;
+		}
+
+		.navbar-nav>li>a {
+			color: #fff !important;
+		}
+
+		.navbar-nav>.active>a, .navbar-nav>.open>a {
+			background: #fff !important;
+			color: #000 !important;
+		}
+
+		.dropdown-menu>li>a:hover {
+			background: #000 !important;
+			color: #fff !important;
+		}
+
+		.spacer {
+			margin-top: 75px;
+		}
+
+		#left-eye {
+			position: relative;
+			float: left;
+		}
+
+		#right-eye {
+			d position: relative;
+			float: right;
+		}
+
+		#left-box {
+			position: absolute;
+			left: 250px;
+			top: 100px;
+			width: 150px;
+			height: 150px;
+		}
+
+		#right-box {
+			position: absolute;
+			left: 250px;
+			top: 100px;
+			width: 150px;
+			height: 150px;
+		}
+
+		.analysis th, .analysis td {
+			text-align: center;
+		}
+
+		/* No style rules here yet */
+		.axis path, .axis line {
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
+
+		input[type="radio"] {
+			display:none;
+
+		}
+		input[type="radio"] + label {
+			color: #292321;
+			font-family:Arial, sans-serif;
+			font-size:14px;
+			margin-left:30px;
+		}
+
+		input[type="radio"] + label span {
+			display:inline-block;
+			width:19px;
+			height:19px;
+			margin:-1px 4px 0 0;
+			vertical-align:middle;
+			cursor:pointer;
+			-moz-border-radius:  50%;
+			border-radius:  50%;
+		}
+
+		input[type="radio"] + label span {
+			background-color:#292321;
+		}
+
+		input[type="radio"]:checked + label span{
+			background-color:#CC3300;
+			border:4px solid #292321;
+		}
+		#buttons{
+			float:left;
+			margin-left:130px;
+		}
+		#buttons button{
+			width:100px;
+		}
+		input[type="radio"] + label span,
+		input[type="radio"]:checked + label span {
+			-webkit-transition:background-color 0.4s linear;
+			-o-transition:background-color 0.4s linear;
+			-moz-transition:background-color 0.4s linear;
+			transition:background-color 0.4s linear;
+		}
+		a{
+			text-decoration: none;
+		}
+		.success{
+			background-color: #43AC6A;
+			border-color: #368a55;
+			color: #FFFFFF;
+			padding:10px;
+
+		}
+
+		@media print{@page {size: landscape}}
+		@media all and (orientation:landscape) {
+			/* Style adjustments for landscape mode goes here */
+		}
+		#to_email{
+			padding:5px 10px;
+
+			margin-bottom: 30px;
+
+		}
+		#to_email:focus{
+			border:1px solid black;
+			box-shadow:0px 0px 10px 1px rgba(0,0,0,.5);
+		}
+		#email_submit{
+			background-color: #43AC6A;
+			border-color: #368a55;
+			color: #FFFFFF;
+			width:100px;
+			transition: background-color 300ms ease-out;
+		}
+		#email_submit:hover{
+			background-color: #368a55;
+		}
+		#popup_email div{
+			text-align:center;
+			margin:50px;
+		}
+
+		#popup_email label{
+			text-align:left;
+			margin-top:5%;
+			font-size:18px;
+		}
+		footer{
+			width:100%;
+			height:auto;
+		}
+	</style>
+
+	<script>
+
+		$(document).ready(function(){
+
+			$('#download_pdf').click(function() {       
+				html2canvas(document.body, {
+					onrendered: function(canvas) {
+						var pdf = new jsPDF('l', 'mm', [320, 210]);
+						var marginLeft=0;
+						var marginRight=0;
+						pdf.addImage(canvas.toDataURL("image/jpeg"),"jpeg",marginLeft,marginRight);
+						pdf.save("report.pdf");
+					}
+				});
+			});
+
+			$("#overlay").click(function(){
+				var overlay = document.getElementById('overlay');
+				var specialBox = document.getElementById('popup');
+				var specialBox1 = document.getElementById('popup_email');
+
+
+				overlay.style.display = "none";
+				specialBox.style.display = "none";
+				specialBox1.style.display = "none";
+			});
+	var element = $("body"); // global variable
+var getCanvas; // global variable
+
+$("#save").on('click', function () {
+	html2canvas(element, {
+		onrendered: function (canvas) {
+			$("#previewImage").append(canvas);
+			getCanvas = canvas;
+		}
+	});
+	toggleOverlay();
+});
+$("#download").on('click', function () {
+	var imgageData = getCanvas.toDataURL("image/png");
+    // Now browser starts downloading it instead of just showing it
+    var newData = imgageData.replace(/^data:image\/jpg/, "data:application/octet-stream");
+    $("#download").attr("download", "report.jpg").attr("href", newData);
+
+});
+
+
+function toggleOverlay(){
+	var overlay = document.getElementById('overlay');
+	var specialBox = document.getElementById('popup');
+	overlay.style.opacity = .4;
+	if(overlay.style.display == "block"){
+		overlay.style.display = "none";
+		specialBox.style.display = "none";
+	} else {
+		overlay.style.display = "block";
+		specialBox.style.display = "block";
+
+	}
+}
+$("#Email").click(function(){
+	toggleOverlay_email();
+});
+function toggleOverlay_email(){
+	var overlay = document.getElementById('overlay');
+	var specialBox = document.getElementById('popup_email');
+	overlay.style.opacity = .4;
+	if(overlay.style.display == "block"){
+		overlay.style.display = "none";
+		specialBox.style.display = "none";
+	} else {
+		overlay.style.display = "block";
+		specialBox.style.display = "block";
+
+	}
+}
+window.onafterprint=function(){
+	console.log("printed")
+};
+var c = document.getElementById("graph");
+var ctx = c.getContext("2d");
+var ctx1 = c.getContext("2d");
+var ctx2 = c.getContext("2d");
+ctx1.beginPath();
+ctx1.font = "10pt Open San";
+ctx1.moveTo(20, 200);
+ctx1.lineTo(20, 0);
+
+ctx1.moveTo(20, 160);
+ctx1.lineTo(15, 160);
+ctx1.fillText("20", 3, 160);
+
+ctx1.moveTo(20, 120);
+ctx1.lineTo(15, 120);
+ctx1.fillText("40", 3, 120);
+
+ctx1.moveTo(20, 80);
+ctx1.lineTo(15, 80);
+ctx1.fillText("60", 3, 80);
+
+ctx1.moveTo(20, 40);
+ctx1.lineTo(15, 40);
+ctx1.fillText("80", 3, 40);
+
+ctx1.moveTo(20, 200);
+ctx1.lineTo(20, 207);
+ctx1.fillText("0", 23, 212);
+ctx1.fillText("Temporal", 0, 224);
+ctx1.moveTo(110, 200);
+ctx1.lineTo(110, 207);
+ctx1.fillText("90", 113, 212);
+ctx1.fillText("Superior", 90, 224);
+ctx1.moveTo(200, 200);
+ctx1.lineTo(200, 207);
+ctx1.fillText("180", 203, 212);
+ctx1.fillText("Nasal", 200, 224);
+ctx1.moveTo(290, 200);
+ctx1.lineTo(290, 207);
+ctx1.fillText("270", 293, 212);
+ctx1.fillText("Inferior", 290, 224);
+ctx1.moveTo(380, 200);
+ctx1.lineTo(380, 207);
+ctx1.fillText("360", 360, 212);
+
+ctx1.strokeStyle = "black";
+ctx1.stroke();
+
+ctx2.beginPath();
+
+var prevk = 200 - (2 * (Math.random*200)+1);
+ctx2.moveTo(20,150);				
+for (var i = 20, j = 0; i < 380 && j < 35; i += 10, j++) {
+	k = Math.floor(200 - (2 * (Math.random*200)+1));
+
+	ctx2.lineTo(i,k);
+
+
+	prevk = k;
+}
+ctx2.lineTo(i,200);
+ctx2.lineTo(20,200);
+ctx2.strokeStyle = "green";
+
+ctx2.fillStyle="rgba(0,255,0,.5";
+ctx2.fill();
+ctx2.stroke();
+
+ctx2.closePath();
+});
+</script>
+
+</head>
+<body style="width: 1180px;  margin-right: auto;background-color:white;">
+	<div id="container" style="background-color:white;">
+		<div id="body">
+
+			<div id="head"
+			style="margin-top: 5px; height: 100px; border-bottom: 2px solid black;">
+			<form action=""
+			class="navbar-right" id="logoutForm" method="post">
+			<input name="__RequestVerificationToken" type="hidden" value="" />
+			<input type="hidden" name="Email" value="" />
+			<ul class="right" style="list-style-type: none;">
+
+				<!-- 							<li><a href="RolesAdmin.html">Roles</a></li> -->
+				<!-- 							<li><a href="UsersAdmin.html">Users</a></li> -->
+				<li><a href="Dashboard.jsp" title="Manage">Hello </a></li>
+				<li style="background: rgba(0, 0, 0, 0)"><input type="submit"
+					value="Logout" style="background: rgba(0, 0, 0, 0); border: 0px;"></li>
+				</ul>
+			</form>
+			<div class="details" style="float: left;">
+				<span style="float:left;">Patient Name:</span><label style="float:left;">bhargav</label><br> <span style="float:left;">Patient
+				ID:</span><labelstyle="float:left;">asldkjfalskj</label>
+			</div>
+			<div style="float: right;">
+				<img src="kalpah_logo1.png" width="150px">
+			</div>
+			<div
+			style="width: 1px; height: 100px; border: 1px solid black; margin-left: auto; margin-right: auto;"></div>
+		</div>
+
+		<div style='float: left; margin-left: 20px;'>
+			
+			<img id="image"
+			src="Glaucoma.jpg"
+			width="700px" style="margin-top: 30px" />
+		</div>
+
+		<table class="table table-condensed analysis"
+		style="width: 33%; float: left; margin-left: 50px;">
+		<thead>
+			<tr>
+				
+				<th><font face="sans-serif">Feature Name</font></th>
+				<th><font face="sans-serif">Left Eye</font></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="color: #000"><font
+					face="sans-serif">Rim Area</font></td>
+					<td style=""><font face="sans-serif"> </font></td>
+				</tr>
+				<tr>
+					<td style=" color: #000;"><font
+						face="sans-serif">Disc Area</font></td>
+						<td style=""><font face="sans-serif"></font></td>
+
+					</tr>
+					<tr>
+						<td style=""><font
+							face="sans-serif">Avg C/D ratio</font></td>
+							<td style=""><font face="sans-serif"></font></td>
+
+						</tr>
+						<tr>
+							<td style=" color: #000"><font
+								face="sans-serif">Horizontal C/D ratio</font></td>
+								<td style=""><font face="sans-serif"></font></td>
+							</tr>
+							<tr>
+								<td style=" color: #000"><font
+									face="sans-serif">Vertical C/D ratio</font></td>
+									<td style=""><font face="sans-serif"></font></td>
+								</tr>
+							</tbody>
+						</table>
+						<div style="padding: 0 85px;">
+							<a href="javascript:popup()" style="color: #ff3b30"> <font
+								color="#ff3b30" style="" face="sans-serif" size="3"></font>
+							</a>
+						</div>
+						<div style="padding: 0 10px;"></div>
+						<svg xmlns="http://www.w3.org/2000/svg" width="120" height="160.0"
+						style="margin-top: 5px; float: right; margin-right: 100px;">
+
+						<g width="100.0000" height="100.0000" transform="translate(10, 28)">
+							<g transform="rotate(-45 50 50)">
+								<path
+								d="M50.0000,50.0000 A0,0 0 0,0 50.0000,50.0000 L50.0000,10.0000 A40,40 0 0,1 90.0000,50.0000 z"
+								stroke="#fff" stroke-width="2" fill="#4DC65C"></path>
+								<path
+								d="M50.0000,50.0000 A0,0 0 0,0 50.0000,50.0000 L10.0000,50.0000 A40,40 0 0,1 50.0000,10.0000 z"
+								stroke="#fff" stroke-width="2" fill="#4DC65C"></path>
+								<path
+								d="M50.0000,50.0000 A0,0 0 0,0 50.0000,50.0000 L50.0000,90.0000 A40,40 0 0,1 10.0000,50.0000 z"
+								stroke="#fff" stroke-width="2" fill="#D7D7D7" data-toggle="tooltip"
+								title="ISNT Rule Violates Here!"></path>
+								<path
+								d="M50.0000,50.0000 A0,0 0 0,0 50.0000,50.0000 L90.0000,50.0000 A40,40 0 0,1 50.0000,90.0000 z"
+								stroke="#fff" stroke-width="2" fill="#4DC65C"></path>
+
+								<text x="45" y="30" font-family="sans-serif" font-weight="bold" fill="white"
+								transform="rotate(45.0 50 50)">S</text>
+								<text x="30" y="50" font-family="sans-serif" font-weight="bold"
+								text-anchor="middle" dominant-baseline="middle" fill="white"
+								transform="rotate(45.0 50 50)">N</text>
+								<text x="48" y="75" font-family="sans-serif" font-weight="bold" fill="white"
+								transform="rotate(45.0 50 50)">I</text>
+								<text x="70" y="50" font-family="sans-serif" font-weight="bold" fill="white"
+								text-anchor="middle" dominant-baseline="middle" 
+								transform="rotate(-315.0 50 50)">T</text>
+							</g>
+							<text x="45" y="105" font-family="sans-serif" font-weight="bold"></text>
+							<text x="45" y="5" font-family="sans-serif" font-weight="bold"> </text>
+							<text x="-5" y="55" font-family="sans-serif" font-weight="bold">  </text>
+							<text x="90" y="55" font-family="sans-serif" font-weight="bold"> </text>
+						</g>
+
+						<text x="15" y="160" font-family="sans-serif" font-size="18"
+						font-weight="bold">ISNT RULE</text>
+					</svg>
+
+					<svg width="200px" height="145px" viewBox="0 0 180 145" version="1.1"
+					xmlns="http://www.w3.org/2000/svg"
+					xmlns:xlink="http://www.w3.org/1999/xlink"
+					xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+					style="float: right;">
+					<!-- Generator: Sketch 3.3.2 (12043) - http://www.bohemiancoding.com/sketch -->
+					<g transform="translate(0, 50)">
+						<defs></defs>
+						<g id="Page-1" stroke="none" stroke-width="1" fill="none"
+						fill-rule="evenodd" sketch:type="MSPage">
+						<g id="Delete-Button-Copy" sketch:type="MSLayerGroup"
+						transform="translate(8.000000, 5.000000)">
+						<rect rx="0" ry="0" id="Background" fill="#4DC65C"
+						sketch:type="MSShapeGroup" x="0" y="0" width="61.5" height="56"></rect>
+						<text id="Type-something" sketch:type="MSTextLayer"
+						font-family="sans-serif" font-size="18" font-weight="bold"
+						fill="#ffffff">
+						<tspan x="8" y="35">DDLS</tspan>
+					</text>
+				</g>
+				<g class="scale" transform="translate(-25.000000, -11.000000)">
+					<g id="Activity-Icon-(Share-Sheet)-Copy"
+					sketch:type="MSLayerGroup"
+					transform="translate(110.000000, 14.000000)" stroke="green"
+					fill="#FFFFFF">
+					<path
+					d="M20.9185,0 L39.0815,0 C45.105,0 48.116,0 51.3585,1.025 C54.8985,2.3135 57.6865,5.1015 58.975,8.6415 C60,11.8835 60,14.8955 60,20.9185 L60,39.0815 C60,45.105 60,48.116 58.975,51.3585 C57.6865,54.8985 54.8985,57.6865 51.3585,58.9745 C48.116,60 45.105,60 39.0815,60 L20.9185,60 C14.895,60 11.8835,60 8.6415,58.9745 C5.1015,57.6865 2.3135,54.8985 1.025,51.3585 C0,48.116 0,45.105 0,39.0815 L0,20.9185 C0,14.8955 0,11.8835 1.025,8.6415 C2.3135,5.1015 5.1015,2.3135 8.6415,1.025 C11.8835,0 14.895,0 20.9185,0 L20.9185,0"
+					id="Icon-Shape" sketch:type="MSShapeGroup"></path>
+				</g>
+
+
+				<g id="Notification-Copy" sketch:type="MSLayerGroup"
+				transform="translate(129.000000, 32.000000)">
+				<circle id="Notification-Bubble" fill="#4DC65C"
+				sketch:type="MSShapeGroup" cx="11" cy="11" r="20"></circle>
+				<text id="Number" sketch:type="MSTextLayer"
+				font-family="sans-serif" font-size="24" font-weight="bold"
+				fill="white">
+				<tspan x="5" y="18"></tspan>
+			</text>
+		</g>
+		<text id="Number" sketch:type="MSTextLayer"
+		font-family="sans-serif" font-size="16" font-weight="260"
+		fill="black">
+		<tspan x="135" y="49"></tspan>
+	</text>
+</g>
+</g>
+</g>
+</svg>
+<div style="margin: 10 0 0 50px; float: left;">
+	<canvas id="graph" width="380" height="230" style="margin-left:10px;"></canvas>
+</div>
+
+</div>
+<div id="previewImage" style="display:none;"> 
+</div>
+<div id="popup">
+	<div>
+		<input type="radio" name="format_type" id="pdf"  /><label for="pdf"><span></span>PDF Format</label>
+		<input type="radio" name="format_type" id="png" checked/><label for="png"><span></span>PNG Format</label>
+	</div>
+	<div>
+		<a class="success" href="" id="download">Download</a>
+	</div>
+</div>
+<div id="popup_email">
+	
+	<div>
+
+		<form action="">
+			<label>Mail To:</label><br>
+			<input type="email" name="to_email" id="to_email"  />
+			<input type="submit" class="success" name="" id="email_submit" value="Send"/>
+		</form>
+	</div>
+	<div>
+		
+	</div>
+</div>
+
+<div id="overlay">
+</div>
+
+<div style="width:100%;" id="buttons">
+
+	<button class="success" style=""
+	id="print"
+	onClick="this.style.display='none';document.getElementById('logoutForm').style.display='none';window.print();">Print</button>
+	<button class="success" style=""
+	id="save"
+	onClick="">Save</button>
+
+	<button class="success"
+	id="Email"
+	>Email</button>
+	<button id="download_pdf">Save it </button>
+
+	</div>
+	
+</body>
+</html>
